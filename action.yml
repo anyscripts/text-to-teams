@@ -1,0 +1,39 @@
+# @author skitsanos
+
+name: Message Teams
+description: Posts a message to Microsoft Teams Channel (https://learn.microsoft.com/en-us/microsoftteams/platform/webhooks-and-connectors/how-to/add-incoming-webhook)
+
+inputs:
+  URL:
+    description: 'The Teams Webhook URL where the message will be sent'
+    required: true
+  MESSAGE:
+    description: 'The message that will be sent to the Teams Webhook'
+    required: true
+
+outputs:
+  response:
+    description: 'The response received from the webhook'
+    value: ${{ steps.Post_JSON_to_URL.outputs.response }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Install jq
+      shell: bash
+      run: |
+        which jq > /dev/null
+        if [ $? -ne 0 ]; then
+          sudo apt-get install jq
+        fi
+
+    - name: Post JSON to URL
+      shell: bash
+      env:
+        URL: ${{ inputs.URL }}
+        TOKEN: ${{ inputs.TOKEN }}
+        MESSAGE: ${{ inputs.MESSAGE }}
+      run: |
+        JSON=$(jq --arg message "$MESSAGE" -n '{text: $message}')
+        response=$(curl -X POST -H "Content-Type: application/json" -d "$JSON" $URL)
+        echo "response=$response" >> $GITHUB_OUTPUT

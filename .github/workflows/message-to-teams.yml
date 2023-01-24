@@ -1,0 +1,19 @@
+name: Test Message Teams
+
+on:
+  workflow_dispatch:
+    inputs:
+      MESSAGE:
+        description: 'Message to send to Teams'
+        required: true
+        default: 'Hello World'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Message Teams
+        uses: anyscripts/text-to-teams@main
+        with:
+          URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
+          MESSAGE: ${{ github.event.inputs.MESSAGE }}
